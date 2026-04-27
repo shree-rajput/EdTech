@@ -1,4 +1,4 @@
-import User from "../model/user.model";
+import User from "../model/user.model.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -63,7 +63,7 @@ export const LoginUser = async (req , res) => {
   process.env.JWT_SECRET,
   { expiresIn: "7d" }
 );
-res.cookie("token", token, {
+res.status(200).cookie("token", token, {
   httpOnly: true,
   secure: true,
   sameSite: "strict"
