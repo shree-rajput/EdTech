@@ -1,4 +1,4 @@
-import Message from "../models/messageModel.js";
+import Message from "../model/message.model.js";
 
 // 📤 Send Message
 export const sendMessage = async (req, res) => {
@@ -25,15 +25,18 @@ export const sendMessage = async (req, res) => {
 export const getMessages = async (req, res) => {
   try {
     const { senderId, receiverId } = req.params;
+const { page = 1, limit = 20 } = req.query;
 
-    const messages = await Message.find({
-      $or: [
-        { sender: senderId, receiver: receiverId },
-        { sender: receiverId, receiver: senderId },
-      ],
-    })
-      .sort({ createdAt: 1 })
-      .populate("sender receiver", "name email");
+const messages = await Message.find({
+  $or: [
+    { sender: senderId, receiver: receiverId },
+    { sender: receiverId, receiver: senderId },
+  ],
+})
+.sort({ createdAt: -1 })
+.limit(limit * 1)
+.skip((page - 1) * limit)
+      .populate("sender", "name");
 
     res.json(messages);
   } catch (error) {
