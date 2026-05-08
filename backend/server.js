@@ -3,45 +3,27 @@ import http from "http";
 import cors from "cors";
 import dotenv from "dotenv";
 import { Server } from "socket.io";
-
-import connectDB from "./config/db.js";
+import conncetToSocket from './controller/socket.controller.js';
+import { connectDB } from "./config/db.js";
 import messageRoutes from "./routes/message.routes.js";
+import { createServer } from "http";
 import { socketHandler } from "./sockets/socket.js";
 
 dotenv.config();
-
+const PORT = process.env.PORT || 5001;
 const app = express();
-
+const server = createServer(app);
+const io = conncetToSocket(server);
 // 🔹 Middlewares
-app.use(express.json());
+app.use(express.json({ limit: "40kb" }));
+app.set("port", process.env.PORT || PORT);
 app.use(cors());
-
-// 🔹 Routes
-app.use("/api/messages", messageRoutes);
-
+app.use(express.urlencoded({ limit: "40kb", extended: true }));
+// 🔹 Rout
+app.use("/api/v1/messages", messageRoutes);
 // 🔹 DB Connection
 connectDB();
-
-// 🔹 Create HTTP Server
-const server = http.createServer(app);
-
-// 🔹 Socket Setup
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-  },
-});
-
-// 🔹 Socket Logic (separate file)
-socketHandler(io);
-
-// 🔹 Basic Route
-app.get("/", (req, res) => {
-  res.send("Server is running");
-});
-
 // 🔹 Start Server
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+server.listen(app.get("port"), () => {
+        console.log(`server is running on port ${app.get("port")}`);
+    });
